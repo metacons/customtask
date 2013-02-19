@@ -17,14 +17,17 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Message;
 import android.util.Log;
 import com.metacons.customtaskapi.R;
 
-public class CustomTask extends AsyncTask<Object, String, String> {
+public class CustomTask extends AsyncTask<Object, String, String> implements
+		DialogInterface.OnCancelListener {
 
 	private CustomTaskFinishedListener callback;
 
@@ -43,15 +46,18 @@ public class CustomTask extends AsyncTask<Object, String, String> {
 		cnx = context;
 		this.callback = clb;
 		this.showProgressBar = showProgressBar;
+
 	}
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
 		try {
-			if (showProgressBar)
+			if (showProgressBar) {
 				progres = ProgressDialog.show(cnx, "Bağlanıyor",
 						"Lütfen Bekleyiniz");
+				setCommonProcess();
+			}
 		} catch (Exception ex) {
 			Log.e("Custom Task", ex.getMessage());
 		}
@@ -147,7 +153,7 @@ public class CustomTask extends AsyncTask<Object, String, String> {
 			msg.obj = sb.toString();
 
 		} catch (Exception ex) {
-			msg.arg1 = FCodes.STATUS_ERROR;
+			msg.what = FCodes.STATUS_ERROR;
 			msg.obj = ex.toString();
 			Log.e("Error", ex.toString());
 		} finally {
@@ -194,7 +200,20 @@ public class CustomTask extends AsyncTask<Object, String, String> {
 	protected void onPostExecute(String result) {
 		super.onPostExecute(result);
 		callback.taskFinished(msg);
-
 	}
 
+	private void setCommonProcess() {
+		progres.setCanceledOnTouchOutside(true);
+		progres.setOnCancelListener(this);
+	}
+
+	@Override
+	public void onCancel(DialogInterface arg0) {
+		this.cancel(true);
+		if (msg == null) {
+			msg = new Message();
+		}
+		msg.what = FCodes.STATUS_CANCELLED;
+		callback.taskFinished(msg);
+	}
 }
