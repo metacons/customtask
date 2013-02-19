@@ -200,6 +200,8 @@ public class CustomTask extends AsyncTask<Object, String, String> implements
 	protected void onPostExecute(String result) {
 		super.onPostExecute(result);
 		callback.taskFinished(msg);
+		if (progres.isShowing())
+			progres.dismiss();
 	}
 
 	private void setCommonProcess() {

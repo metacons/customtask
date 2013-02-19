@@ -25,6 +25,7 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public void taskFinished(Message msg) {
+		
 		if (msg != null) {
 			Log.i("what", "" + msg.what);
 		}else {
